@@ -28,3 +28,8 @@ services:
       - 7077:7077
       - 4040:4040
       - 18080:18080
+    volumes:
+      - jarfiles:/root/jarfilesvm
+volumes:
+  jarfiles:
+    driver: "local" 
