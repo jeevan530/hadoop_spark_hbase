@@ -34,8 +34,14 @@ RUN wget --progress=dot:giga -P /tmp/ http://archive.apache.org/dist/hbase/$hbas
 RUN wget --progress=dot:giga -P /tmp/ https://archive.apache.org/dist/spark/spark-$spark_ver/spark-$spark_ver-bin-hadoop2.7.tgz && \
     tar xzf /tmp/spark-$spark_ver-bin-hadoop2.7.tgz -C /opt/ && \
     ln -s /opt/spark-$spark_ver-bin-hadoop2.7 /opt/spark && \
-    rm -rf /tmp/spark-$spark_ver-bin-hadoop2.7.tgz
+    rm -rf /tmp/spark-$spark_ver-bin-hadoop2.7.tgz && \
+    ln -s /opt/hbase/lib /opt/spark-$spark_ver-bin-hadoop2.7/lib
 
+# Install Zookeeper
+RUN wget --progress=dot:giga -P /tmp/ https://archive.apache.org/dist/zookeeper/zookeeper-3.4.12/zookeeper-3.4.12.tar.gz && \
+    tar xzf /tmp/zookeeper-3.4.12.tar.gz -C /opt/ && \
+    ln -s /opt/zookeeper-3.4.12 /opt/zookeeper && \
+    rm -rf /tmp/zookeeper-3.4.12.tar.gz
 
 
 # Generate ssh keys for hadoop/hbase start
@@ -54,9 +60,16 @@ ADD conf/hdfs-site.xml /opt/hadoop-$hadoop_ver/etc/hadoop/hdfs-site.xml
 ENV JAVA_HOME /usr/lib/jvm/java-8-oracle/
 RUN /opt/hadoop-$hadoop_ver/bin/hdfs namenode -format
 
+# Configure Zookeeper
+
+ADD /conf/zoo.cfg /opt/zookeeper/conf/zoo.cfg
+RUN echo "export HBASE_MANAGES_ZK=true" >> /opt/hbase/conf/hbase-env.sh
+
 # Configure hbase
 RUN sed -i '2s/^/export JAVA_HOME=\/usr\/lib\/jvm\/java-8-oracle\n/' /opt/hbase/bin/hbase-config.sh
 ADD conf/hbase-site.xml /opt/hbase/conf/hbase-site.xml
+ADD conf/hbase-site.xml /opt/spark/conf/hbase-site.xml
+
 
 # Configure spark
 ADD conf/spark-env.sh /opt/spark/conf/spark-env.sh

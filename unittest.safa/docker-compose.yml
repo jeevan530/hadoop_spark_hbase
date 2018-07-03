@@ -1,7 +1,7 @@
 version: '2'
 services:
   hbase:
-    build: ./hadoopDocker
+    build: ./hbase
     container_name: hbase_running_j
     ports: 
       - 50010:50010
